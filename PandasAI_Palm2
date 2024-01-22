@@ -1,0 +1,41 @@
+from dotenv import load_dotenv
+import os
+import streamlit as st
+from streamlit_chat import message
+from langchain.document_loaders.csv_loader import CSVLoader
+import tempfile
+import pandas as pd
+from pandasai import SmartDataframe
+from langchain.chains import ConversationalRetrievalChain
+from langchain.vectorstores import FAISS
+
+from pandasai import SmartDataframe
+from pandasai.llm import GooglePalm
+import matplotlib
+
+matplotlib.use('TkAgg')
+
+
+load_dotenv()
+
+API_KEY = os.environ['Google_Palm2']
+llm = GooglePalm(api_key=API_KEY)
+
+
+st.title('Upload Your CSV File!!')
+uploaded_file = st.sidebar.file_uploader("Upload your Data", type="csv")
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.write(df.head())
+
+    prompt = st.text_area("Enter Your Prompt")
+    df = SmartDataframe(df, config={"llm": llm})
+
+    if st.button("Generate"):
+        if prompt:
+            with st.spinner("Generating Response..."):
+                # st.write("It IS Generating")
+                st.write(df.chat(prompt))
+        else:
+            st.warning("Enter Prompt")
